@@ -1,15 +1,36 @@
+def print_board(board):
+    print("\n+-------+-------+-------+")
+
+    for i in range(9):
+        print("|", end=" ")
+
+        for j in range(9):
+            if board[i][j] == 0:
+                print(".", end=" ")
+            else:
+                print(board[i][j], end=" ")
+
+            if (j + 1) % 3 == 0:
+                print("|", end=" ")
+
+        print()
+
+        if (i + 1) % 3 == 0:
+            print("+-------+-------+-------+")
+
+
 def is_valid(board, row, col, num):
+
     # Check row
-    for j in range(9):
-        if board[row][j] == num:
-            return False
+    if num in board[row]:
+        return False
 
     # Check column
     for i in range(9):
         if board[i][col] == num:
             return False
 
-    # Check 3x3 subgrid
+    # Check 3x3 box
     start_row = (row // 3) * 3
     start_col = (col // 3) * 3
 
@@ -22,39 +43,51 @@ def is_valid(board, row, col, num):
 
 
 def find_empty(board):
-    for i in range(9):
-        for j in range(9):
-            if board[i][j] == 0:
-                return i, j
-    return None
+    best_cell = None
+    minimum_options = 10
+
+    # Choose the empty cell with the fewest possibilities
+    for row in range(9):
+        for col in range(9):
+
+            if board[row][col] == 0:
+
+                options = 0
+
+                for num in range(1, 10):
+                    if is_valid(board, row, col, num):
+                        options += 1
+
+                if options < minimum_options:
+                    minimum_options = options
+                    best_cell = (row, col)
+
+    return best_cell
 
 
 def solve_sudoku(board):
+
     empty = find_empty(board)
 
+    # No empty cells → Sudoku solved
     if empty is None:
         return True
 
     row, col = empty
 
     for num in range(1, 10):
+
         if is_valid(board, row, col, num):
+
             board[row][col] = num
 
             if solve_sudoku(board):
                 return True
 
-            # Backtrack
+            # Backtracking
             board[row][col] = 0
 
     return False
-
-
-def print_board(board):
-    for i in range(9):
-        for j in range(9):
-            print(board[i][j], end=" ")
-        print()
 
 
 # Sudoku puzzle
@@ -72,11 +105,24 @@ board = [
     [0, 0, 0, 0, 8, 0, 0, 7, 9]
 ]
 
-print("Original Sudoku:")
+
+# Count empty cells
+empty_cells = sum(row.count(0) for row in board)
+
+print("========== SUDOKU SOLVER ==========")
+
+print("\nOriginal Sudoku:")
 print_board(board)
 
+print(f"Empty cells: {empty_cells}")
+
+# Solve
 if solve_sudoku(board):
+
     print("\nSolved Sudoku:")
     print_board(board)
+
+    print(f"Successfully solved {empty_cells} empty cells.")
+
 else:
-    print("No solution exists.")
+    print("\nNo solution exists!")
